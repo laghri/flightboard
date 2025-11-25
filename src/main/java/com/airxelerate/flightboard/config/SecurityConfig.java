@@ -1,8 +1,9 @@
 package com.airxelerate.flightboard.config;
 
+import com.airxelerate.flightboard.dto.response.ApiResponse;
 import com.airxelerate.flightboard.security.jwt.JwtAuthenticationEntryPoint;
 import com.airxelerate.flightboard.security.jwt.JwtAuthenticationFilter;
-import jakarta.servlet.http.HttpServletRequest;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -22,8 +23,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import tools.jackson.databind.ObjectMapper;
-
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,6 +36,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final UserDetailsService userDetailsService;
+    private final ObjectMapper objectMapper;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -48,7 +48,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                        .accessDeniedHandler(accessDeniedHandler()))
+                        .accessDeniedHandler(accessDeniedHandler(objectMapper)))
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
@@ -76,20 +76,13 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AccessDeniedHandler accessDeniedHandler() {
-        return (HttpServletRequest request, HttpServletResponse response,
-                org.springframework.security.access.AccessDeniedException ex) -> {
-
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    public AccessDeniedHandler accessDeniedHandler(ObjectMapper mapper) {
+        return (request, response, ex) -> {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
-            Map<String, Object> body = new HashMap<>();
-            body.put("success", false);
-            body.put("message", "You are logged in but do not have the required permissions");
-            body.put("timestamp", LocalDateTime.now().toString());
-            body.put("path", request.getServletPath());
-
-            ObjectMapper mapper = new ObjectMapper();
+            ApiResponse<Void> body = ApiResponse.<Void>error(
+                    "You are logged in but do not have the required permissions");
             mapper.writeValue(response.getOutputStream(), body);
         };
     }
