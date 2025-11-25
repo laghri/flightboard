@@ -212,27 +212,32 @@ Authorization: Bearer <token>
 ## 🏗️ Project Structure
 
 ```
-src/main/java/com/airxelerate/inventory/
-├── config/               
+src/main/java/com/airxelerate/flightboard/
+├── config/          
+    ├──AppConfig
 │   ├── SecurityConfig.java
 │   └── DataInitializer.java
 ├── controller/           
 │   ├── AuthenticationController.java
 │   └── FlightController.java
-├── domain/                
-│   └── entity/
+├── model/                
 │       ├── User.java
 │       ├── Flight.java
 │       └── Role.java
 ├── dto/                 
 │   ├── request/
+        ├── RegisterRequest
 │   │   ├── LoginRequest.java
 │   │   └── FlightRequest.java
 │   └── response/
 │       ├── AuthResponse.java
 │       ├── FlightResponse.java
+        ├── UserResponse
 │       └── ApiResponse.java
-├── exception/         
+├── exception/  
+    ├── DuplicateFlightEXception.java
+    ├── UnauthorizedOperationExeption.java
+    ├── UserAleardyExistsExpection.java
 │   ├── GlobalExceptionHandler.java
 │   ├── FlightNotFoundException.java
 │   └── DuplicateFlightException.java
@@ -243,12 +248,14 @@ src/main/java/com/airxelerate/inventory/
 │   └── jwt/
 │       ├── JwtUtil.java
 │       ├── JwtAuthenticationFilter.java
+        ├── TokenBlacklistService
 │       └── JwtAuthenticationEntryPoint.java
 ├── service/              
 │   ├── AuthenticationService.java
 │   ├── FlightService.java
+    ├── UserService
 │   └── CustomUserDetailsService.java
-└── InventoryApplication.java 
+└── FlighboardApplication.java 
 ```
 
 ## 📥 Postman Collection
