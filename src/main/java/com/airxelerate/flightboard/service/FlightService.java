@@ -24,10 +24,6 @@ public class FlightService {
 
     @Transactional
     public FlightResponse createFlight(FlightRequest request) {
-        log.info("Creating flight: {}{} on {}",
-                request.getCarrierCode(), request.getFlightNumber(), request.getFlightDate());
-
-        // Check for duplicate flight
         flightRepository.findByCarrierCodeAndFlightNumberAndFlightDate(
                 request.getCarrierCode(),
                 request.getFlightNumber(),
@@ -57,9 +53,7 @@ public class FlightService {
 
     @Transactional(readOnly = true)
     public FlightResponse getFlightById(Long id) {
-        log.debug("Fetching flight with ID: {}", id);
-
-        Flight flight = flightRepository.findById(id)
+       Flight flight = flightRepository.findById(id)
                 .orElseThrow(() -> new FlightNotFoundException(
                         "Flight not found with ID: " + id
                 ));
@@ -69,9 +63,7 @@ public class FlightService {
 
     @Transactional(readOnly = true)
     public List<FlightResponse> getAllFlights() {
-        log.debug("Fetching all flights");
-
-        return flightRepository.findAll().stream()
+       return flightRepository.findAll().stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
