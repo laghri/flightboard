@@ -1,43 +1,65 @@
 package com.airxelerate.flightboard.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "flights")
-@Data
+@Table(name = "flights", uniqueConstraints = @UniqueConstraint(columnNames = { "carrier_code", "flight_number",
+        "flight_date" }))
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Flight {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
-    @Column(nullable = false, length = 2)
-    @Pattern(regexp = "^[A-Z0-9]{2}$", message = "Carrier code must be 2 characters (IATA format)")
+
+    @NotNull(message = "Carrier code is required")
+    @Pattern(regexp = "^[A-Z]{2}$", message = "Carrier code must be 2 uppercase letters (IATA code)")
+    @Column(name = "carrier_code", nullable = false, length = 2)
     private String carrierCode;
-    
-    @Column(nullable = false, length = 4)
-    @Pattern(regexp = "^\\d{4}$", message = "Flight number must be 4 digits")
+
+    @NotNull(message = "Flight number is required")
+    @Pattern(regexp = "^\\d{4}$", message = "Flight number must be exactly 4 digits")
+    @Column(name = "flight_number", nullable = false, length = 4)
     private String flightNumber;
-    
-    @Column(nullable = false)
+
+    @NotNull(message = "Flight date is required")
+    @Column(name = "flight_date", nullable = false)
     private LocalDate flightDate;
-    
-    @Column(nullable = false, length = 3)
-    @Pattern(regexp = "^[A-Z]{3}$", message = "Origin must be 3-letter IATA airport code")
+
+    @NotNull(message = "Origin airport is required")
+    @Pattern(regexp = "^[A-Z]{3}$", message = "Origin must be 3 uppercase letters (IATA airport code)")
+    @Column(name = "origin", nullable = false, length = 3)
     private String origin;
-    
-    @Column(nullable = false, length = 3)
-    @Pattern(regexp = "^[A-Z]{3}$", message = "Destination must be 3-letter IATA airport code")
+
+    @NotNull(message = "Destination airport is required")
+    @Pattern(regexp = "^[A-Z]{3}$", message = "Destination must be 3 uppercase letters (IATA airport code)")
+    @Column(name = "destination", nullable = false, length = 3)
     private String destination;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }
